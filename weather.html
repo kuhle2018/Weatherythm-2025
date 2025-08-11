@@ -7,35 +7,101 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {
-      transition: background-image 1s ease-in-out;
+      transition: background-image 1s ease-in-out, background-color 0.5s ease;
       background-size: cover;
       background-position: center;
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb'); /* Cape Town default */
+      overflow: hidden;
+    }
+    .fade-in {
+      animation: fadeIn 1.5s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .bounce {
+      animation: bounce 0.6s ease;
+    }
+    @keyframes bounce {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    .fade-bg {
+      animation: fadeBg 1s ease-in-out;
+    }
+    @keyframes fadeBg {
+      from { opacity: 0.6; }
+      to { opacity: 1; }
+    }
+    .particle {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      background: white;
+      border-radius: 50%;
+      animation: fall 3s linear infinite;
+    }
+    @keyframes fall {
+      0% { transform: translateY(-10px); opacity: 1; }
+      100% { transform: translateY(100vh); opacity: 0; }
     }
   </style>
 </head>
-<body>
+<body class="bg-black text-white">
 
-  <!-- 🔔 Sound Effect -->
-  <audio id="weather-sound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_9f3b5b3e3f.mp3?filename=soft-background-ambient-110397.mp3" autoplay></audio>
+  <!-- 🔊 Sound -->
+  <audio id="weather-sound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_9f3b5b3e3f.mp3?filename=soft-background-ambient-110397.mp3" loop></audio>
 
   <!-- 🌦️ Weather Card -->
-  <div class="bg-black bg-opacity-50 p-8 rounded-3xl shadow-2xl max-w-md w-full text-white text-center">
-    <h1 id="city-name" class="text-4xl font-bold mb-2">Loading...</h1>
-    <p id="weather-description" class="text-lg italic mb-4">Fetching forecast...</p>
-    <div id="temperature" class="text-6xl font-extrabold mb-6 animate-pulse">--°C</div>
-    <button class="bg-blue-500 hover:bg-blue-400 text-white font-semibold py-3 px-6 rounded-full shadow-md transition-all duration-300">
-      ⬅️ Previous Page
+  <div class="bg-black bg-opacity-50 p-6 rounded-3xl shadow-2xl max-w-xl w-full text-center fade-in relative z-10">
+    <h1 class="text-3xl font-bold mb-4">South African Weather</h1>
+
+    <!-- 🌍 City Selector -->
+    <select id="city-select" class="mb-4 p-2 rounded text-black w-full">
+      <option value="Cape Town">Cape Town</option>
+      <option value="Johannesburg">Johannesburg</option>
+      <option value="Durban">Durban</option>
+      <option value="Pretoria">Pretoria</option>
+      <option value="Port Elizabeth">Port Elizabeth</option>
+      <option value="Soweto">Soweto</option>
+      <option value="East London">East London</option>
+    </select>
+
+    <!-- ⏳ Loading Spinner -->
+    <div id="loading" class="mb-4 hidden">
+      <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-white mx-auto"></div>
+    </div>
+
+    <!-- 🌡️ Weather Info -->
+    <div id="weather-info" class="hidden">
+      <img id="weather-icon" class="mx-auto mb-2 w-16 h-16" />
+      <p id="weather-description" class="text-lg italic mb-2">Fetching forecast...</p>
+      <div id="temperature" class="text-6xl font-extrabold mb-6 animate-pulse">--°C</div>
+    </div>
+
+    <!-- 📅 Forecast -->
+    <div id="forecast" class="grid grid-cols-2 gap-4 text-sm hidden"></div>
+
+    <!-- 🌗 Theme Toggle -->
+    <button id="theme-toggle" class="bg-yellow-500 hover:bg-yellow-400 text-black font-semibold py-2 px-4 rounded-full mb-4">
+      Toggle Theme 🌗
     </button>
+
+    <!-- ⬅️ Previous Page -->
+    <a href="index.html">
+      <button class="bg-blue-500 hover:bg-blue-400 text-white font-semibold py-2 px-6 rounded-full shadow-md transition-all duration-300">
+        ⬅️ Previous Page
+      </button>
+    </a>
   </div>
+
+  <!-- 🌧️ Particle Container -->
+  <div id="particles" class="absolute top-0 left-0 w-full h-full pointer-events-none z-0"></div>
 
   <!-- 📜 Scripts -->
   <script>
-    // 🖼️ City Backgrounds
     const cityImages = [
       "https://images.unsplash.com/photo-1506744038136-46273834b3fb", // Cape Town
       "https://images.unsplash.com/photo-1527766833261-b09c3163a791", // Johannesburg
@@ -48,24 +114,142 @@
 
     let currentIndex = 0;
     function rotateBackground() {
+      document.body.classList.add("fade-bg");
       document.body.style.backgroundImage = `url('${cityImages[currentIndex]}')`;
       currentIndex = (currentIndex + 1) % cityImages.length;
+      setTimeout(() => document.body.classList.remove("fade-bg"), 1000);
     }
     setInterval(rotateBackground, 3000);
-    rotateBackground(); // Initial call
+    rotateBackground();
 
-    // 🌡️ Dummy Weather Data (Replace with real API later)
-    const weatherData = {
-      city: "Cape Town",
-      description: "Sunny with a breeze",
-      temperature: 24
-    };
+    // 🔊 Play Sound
+    window.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("weather-sound").volume = 0.5;
+      document.getElementById("weather-sound").play().catch(err => console.warn("Autoplay blocked:", err));
+    });
 
-    // 🎯 Display Weather
-    document.getElementById("city-name").textContent = weatherData.city;
-    document.getElementById("weather-description").textContent = weatherData.description;
-    document.getElementById("temperature").textContent = `${weatherData.temperature}°C`;
+    const apiKey = "1e9cd8209abab1efa4cbc8c260b94509";
+    const citySelect = document.getElementById("city-select");
+    const loading = document.getElementById("loading");
+    const info = document.getElementById("weather-info");
+    const forecastEl = document.getElementById("forecast");
+    const particles = document.getElementById("particles");
+
+    function fetchWeather(city) {
+      localStorage.setItem("selectedCity", city);
+      loading.classList.remove("hidden");
+      info.classList.add("hidden");
+      forecastEl.classList.add("hidden");
+      particles.innerHTML = "";
+
+      fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`)
+        .then(res => res.json())
+        .then(data => {
+          const emoji = getWeatherEmoji(data.weather[0].main);
+          document.getElementById("weather-description").textContent = `${data.weather[0].description} ${emoji}`;
+          const tempEl = document.getElementById("temperature");
+          tempEl.textContent = `${Math.round(data.main.temp)}°C`;
+          tempEl.classList.add("bounce");
+          setTimeout(() => tempEl.classList.remove("bounce"), 600);
+
+          const iconCode = data.weather[0].icon;
+          document.getElementById("weather-icon").src = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
+
+          info.classList.remove("hidden");
+          loading.classList.add("hidden");
+
+          if (data.weather[0].main.toLowerCase().includes("rain")) createParticles("rain");
+          if (data.weather[0].main.toLowerCase().includes("snow")) createParticles("snow");
+
+          fetchForecast(city);
+        });
+    }
+
+    function fetchForecast(city) {
+      fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&appid=${apiKey}`)
+        .then(res => res.json())
+        .then(data => {
+          const days = {};
+          data.list.forEach(item => {
+            const date = item.dt_txt.split(" ")[0];
+            if (!days[date]) {
+              days[date] = item;
+            }
+          });
+
+          forecastEl.innerHTML = "";
+          Object.keys(days).slice(0, 5).forEach(date => {
+            const item = days[date];
+            const icon = item.weather[0].icon;
+            const temp = Math.round(item.main.temp);
+            const description = item.weather[0].description;
+            forecastEl.innerHTML += `
+              <div class="bg-white bg-opacity-20 p-2 rounded-lg text-center">
+                <p class="font-semibold">${date}</p>
+                <img src="https://openweathermap.org/img/wn/${icon}.png" class="mx-auto w-10 h-10" />
+                <p>${description}</p>
+                <p class="text-lg font-bold">${temp}°C</p>
+              </div>
+            `;
+          });
+
+          forecastEl.classList.remove("hidden");
+        });
+    }
+
+    // 🌈 Emoji Mapper
+    function getWeatherEmoji(condition) {
+      const map = {
+        Clear: "☀️",
+        Clouds: "☁️",
+        Rain: "🌧️",
+        Snow: "❄️",
+        Thunderstorm: "⛈️",
+        Drizzle: "🌦️",
+        Mist: "🌫️",
+        Smoke: "💨",
+        Haze: "🌁",
+        Dust: "🌬️",
+        Fog: "🌫️",
+        Sand: "🏜️",
+        Ash: "🌋",
+        Squall: "🌪️",
+        Tornado: "🌪️"
+      };
+      return map[condition] || "🌈";
+    }
+
+    // ❄️ Particle Effects
+    function createParticles(type) {
+      for (let i = 0; i < 50; i++) {
+        const p = document.createElement("div");
+        p.className = "particle";
+        p.style.left = `${Math.random() * 100}%`;
+        p.style.animationDuration = `${2 + Math.random() * 3}s`;
+        p.style.background = type === "rain" ? "#00f" : "#fff";
+        particles.appendChild(p);
+      }
+    }
+
+    // 🌗 Theme Toggle
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+      document.body.classList.toggle("bg-black");
+      document.body.classList.toggle("bg-white");
+      document.body.classList.toggle("text-white");
+      document.body.classList.toggle("text-black");
+    });
+
+    // 🏙️ City Selector
+    citySelect.addEventListener("change", () => {
+      fetchWeather(citySelect.value);
+    });
+
+    // 🧠 Load Saved City
+    const savedCity = localStorage.getItem("selectedCity") || "Cape Town";
+    citySelect.value = savedCity;
+    fetchWeather(savedCity);
   </script>
 </body>
 </html>
+
 
