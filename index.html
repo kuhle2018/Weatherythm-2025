@@ -4,13 +4,23 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WeatherWhisper 💖</title>
-  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <div class="container">
-    <h1>WeatherWhisper 🌦️✨</h1>
-    <input type="text" id="city-input" placeholder="🌍 Enter city name..." />
-    <button onclick="redirectToWeather()">🔍 Get Weather</button>
+<body class="bg-gradient-to-r from-pink-100 to-blue-100 h-screen flex items-center justify-center">
+  <div class="bg-white p-8 rounded-3xl shadow-xl w-full max-w-md text-center">
+    <h1 class="text-4xl font-bold text-pink-500 mb-6">WeatherWhisper 🌦️✨</h1>
+    <input 
+      type="text" 
+      id="city-input" 
+      placeholder="🌍 Enter city name..." 
+      class="w-full px-4 py-3 border-2 border-pink-400 rounded-full focus:outline-none focus:ring-2 focus:ring-pink-300 mb-6 text-lg"
+    />
+    <button 
+      onclick="redirectToWeather()" 
+      class="bg-pink-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-pink-400 transition-all duration-300"
+    >
+      🔍 Get Weather
+    </button>
   </div>
 
   <script>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>South African Weather</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      transition: background-image 1s ease-in-out;
+      background-size: cover;
+      background-position: center;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb'); /* Cape Town default */
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 🔔 Sound Effect -->
+  <audio id="weather-sound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_9f3b5b3e3f.mp3?filename=soft-background-ambient-110397.mp3" autoplay></audio>
+
+  <!-- 🌦️ Weather Card -->
+  <div class="bg-black bg-opacity-50 p-8 rounded-3xl shadow-2xl max-w-md w-full text-white text-center">
+    <h1 id="city-name" class="text-4xl font-bold mb-2">Loading...</h1>
+    <p id="weather-description" class="text-lg italic mb-4">Fetching forecast...</p>
+    <div id="temperature" class="text-6xl font-extrabold mb-6 animate-pulse">--°C</div>
+    <button class="bg-blue-500 hover:bg-blue-400 text-white font-semibold py-3 px-6 rounded-full shadow-md transition-all duration-300">
+      ⬅️ Previous Page
+    </button>
+  </div>
+
+  <!-- 📜 Scripts -->
+  <script>
+    // 🖼️ City Backgrounds
+    const cityImages = [
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb", // Cape Town
+      "https://images.unsplash.com/photo-1527766833261-b09c3163a791", // Johannesburg
+      "https://images.unsplash.com/photo-1503264116251-35a269479413", // Durban
+      "https://images.unsplash.com/photo-1608889175091-7e7d7e3c8c3d", // Pretoria
+      "https://images.unsplash.com/photo-1501973801540-537f08ccae7b", // Port Elizabeth
+      "https://images.unsplash.com/photo-1584467735871-6c1e3f3f3f3f", // Soweto
+      "https://images.unsplash.com/photo-1584467735871-6c1e3f3f3f3f"  // East London
+    ];
+
+    let currentIndex = 0;
+    function rotateBackground() {
+      document.body.style.backgroundImage = `url('${cityImages[currentIndex]}')`;
+      currentIndex = (currentIndex + 1) % cityImages.length;
+    }
+    setInterval(rotateBackground, 3000);
+    rotateBackground(); // Initial call
+
+    // 🌡️ Dummy Weather Data (Replace with real API later)
+    const weatherData = {
+      city: "Cape Town",
+      description: "Sunny with a breeze",
+      temperature: 24
+    };
+
+    // 🎯 Display Weather
+    document.getElementById("city-name").textContent = weatherData.city;
+    document.getElementById("weather-description").textContent = weatherData.description;
+    document.getElementById("temperature").textContent = `${weatherData.temperature}°C`;
+  </script>
+</body>
+</html>
+

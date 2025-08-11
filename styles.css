@@ -47,16 +47,24 @@ input, textarea {
 }
 
 button {
-  padding: 0.8rem 1.2rem;
-  background-color: #ff69b4;
+  padding: 0.8rem 1.5rem;
+  background-color: #ff69b4; /* Hot pink */
   color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: 999px; /* Full pill shape */
   cursor: pointer;
   font-size: 1rem;
-  margin-top: 0.5rem;
-  animation: wiggle 3s infinite;
+  font-weight: bold;
+  box-shadow: 0 0 10px #ff69b4;
+  transition: all 0.3s ease;
 }
+
+button:hover {
+  background-color: #ff85c1;
+  transform: scale(1.05);
+  box-shadow: 0 0 15px #ff85c1;
+}
+
 
 @keyframes wiggle {
   0%, 100% { transform: rotate(0deg); }
