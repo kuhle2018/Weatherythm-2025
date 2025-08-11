@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WeatherWhisper 💖</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>WeatherWhisper 🌦️✨</h1>
+    <input type="text" id="city-input" placeholder="🌍 Enter city name..." />
+    <button onclick="redirectToWeather()">🔍 Get Weather</button>
+  </div>
+
+  <script>
+    function redirectToWeather() {
+      const city = document.getElementById('city-input').value;
+      if (city.trim() !== "") {
+        window.location.href = `weather.html?city=${encodeURIComponent(city)}`;
+      }
+    }
+  </script>
+</body>
+</html>
+
