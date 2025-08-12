@@ -62,114 +62,6 @@ function playWeatherSound(weather) {
   currentAudio.play().catch(err => console.warn('Autoplay blocked:', err));
 }
 
-const backgroundImages = [
-  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQRq4QgSMv-bQBAkLcI3uV8Pca9k6jLFsQF5g&s",
-  "https://media.istockphoto.com/id/1190646515/photo/cape-town-city-skyline-twilight.jpg?s=612x612&w=0&k=20&c=SgLfitVG16OlDwdqHNELTiw6wcGcWqfeIbdAJUIiZAI=",
-  "https://d3hne3c382ip58.cloudfront.net/files/uploads/bookmundi/resized/cmsfeatured/south-africa-in-october-1650615518-785X440.jpg",
-  "https://images.globalhighlights.com/allpicture/2023/03/735e5acf3c754751ba2dfbaf_cut_600x550_241_1748620726.jpg",
-  "https://www.capetourism.com/wp-content/uploads/2023/02/Weather-Cape-Town-1000x570.jpg",
-  "https://southafrica-info.com/wp-content/uploads/2017/10/summer_magalieberg.jpg",
-  "https://media.istockphoto.com/id/697945296/photo/johannesburg-evening-cityscape-of-hillbrow.jpg?s=612x612&w=0&k=20&c=4VHUAEVXHZf8GwQ-ltegjjj2_9pdeewG2FonG2XUBYc="
-];
-
-
-
-let fadeReady = true;
-
-function rotateRandomBackground() {
-  const overlay = document.getElementById('background-overlay');
-  if (!overlay || !fadeReady) return;
-
-  fadeReady = false;
-  overlay.style.opacity = 0;
-
-  setTimeout(() => {
-    const randomIndex = Math.floor(Math.random() * backgroundImages.length);
-    const newImage = backgroundImages[randomIndex];
-    overlay.style.backgroundImage = `url('${newImage}')`;
-    overlay.style.opacity = 1;
-    fadeReady = true;
-  }, 1000);
-}
-
-setInterval(rotateRandomBackground, 3000);
-document.addEventListener('DOMContentLoaded', rotateRandomBackground);
-
-
-
-
-
-
-
-document.addEventListener('click', () => {
-  const sound = document.getElementById('weather-sound');
-  if (sound) {
-    sound.volume = 0.9;
-    sound.play().catch(err => console.warn('Autoplay blocked:', err));
-  }
-}); 
-
-
-
-
-// 🌦️ Fetch Weather from Input (index.html)
-function getWeather() {
-  const cityInput = document.getElementById('city-input');
-  if (!cityInput) return;
-
-  const city = cityInput.value.trim();
-  if (!city) return alert('Please enter a city name.');
-
-  fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`)
-    .then(res => res.json())
-    .then(data => {
-      const name = data.name;
-      const weather = data.weather[0].main.toLowerCase();
-      const temp = Math.round(data.main.temp);
-
-      const nameEl = document.getElementById('city-name');
-      const descEl = document.getElementById('weather-description');
-      const tempEl = document.getElementById('temperature');
-
-      if (nameEl) nameEl.textContent = name;
-      if (descEl) descEl.textContent = `Condition: ${weather}`;
-      if (tempEl) tempEl.textContent = `Temperature: ${temp}°C`;
-
-      updateBackground(weather);
-      playWeatherSound(weather);
-    })
-    .catch(err => {
-      console.error(err);
-      alert('City not found or API error.');
-    });
-}
-
-// 📓 Save Journal Entry
-function saveJournal() {
-  const journalEl = document.getElementById('journal');
-  const descEl = document.getElementById('weather-description');
-  if (!journalEl || !descEl) return;
-
-  const entry = journalEl.value.trim();
-  if (!entry) return alert('Please write something before saving.');
-
-  const date = new Date().toLocaleDateString();
-  const weather = descEl.textContent;
-  const journalEntry = `${date} - ${weather}\n${entry}\n\n`;
-
-  const existing = localStorage.getItem('weatherJournal') || '';
-  localStorage.setItem('weatherJournal', journalEntry + existing);
-
-  alert('Journal entry saved!');
-  journalEl.value = '';
-}
-
-// 📅 Convert Date to Weekday Name
-function getWeekdayName(dateStr) {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('en-US', { weekday: 'long' });
-}
-
 // 🌈 Emoji Mapper
 function getWeatherEmoji(condition) {
   const map = {
@@ -192,6 +84,12 @@ function getWeatherEmoji(condition) {
   return map[condition] || '🌈';
 }
 
+// 📅 Convert Date to Weekday Name
+function getWeekdayName(dateStr) {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-US', { weekday: 'long' });
+}
+
 // 🖼️ Update Background Based on Weather
 function updateBackground(weather) {
   const body = document.body;
@@ -205,6 +103,45 @@ function updateBackground(weather) {
   body.style.backgroundImage = `url('${image}')`;
   body.classList.add('fade-bg');
   setTimeout(() => body.classList.remove('fade-bg'), 1000);
+}
+
+// 🌦️ Fetch Weather for Select Dropdown (weather.html)
+function fetchWeather(city) {
+  localStorage.setItem('selectedCity', city);
+
+  const loading = document.getElementById('loading');
+  const info = document.getElementById('weather-info');
+  const forecastEl = document.getElementById('forecast');
+
+  if (loading) loading.classList.remove('hidden');
+  if (info) info.classList.add('hidden');
+  if (forecastEl) forecastEl.classList.add('hidden');
+
+  fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`)
+    .then(res => res.json())
+    .then(data => {
+      const emoji = getWeatherEmoji(data.weather[0].main);
+      document.getElementById('weather-description').textContent = `${data.weather[0].description} ${emoji}`;
+
+      const tempEl = document.getElementById('temperature');
+      tempEl.textContent = `${Math.round(data.main.temp)}°C`;
+      tempEl.classList.add('bounce');
+      setTimeout(() => tempEl.classList.remove('bounce'), 600);
+
+      const iconCode = data.weather[0].icon;
+      document.getElementById('weather-icon').src = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
+
+      info.classList.remove('hidden');
+      loading.classList.add('hidden');
+
+      playWeatherSound(data.weather[0].main.toLowerCase());
+      fetchForecast(city);
+    })
+    .catch(err => {
+      console.error('Error fetching weather:', err);
+      alert('Could not load weather data.');
+      loading.classList.add('hidden');
+    });
 }
 
 // 📅 Fetch Forecast
@@ -242,73 +179,59 @@ function fetchForecast(city) {
     });
 }
 
+// 📓 Save Journal Entry
+function saveJournal() {
+  const journalEl = document.getElementById('journal');
+  const descEl = document.getElementById('weather-description');
+  if (!journalEl || !descEl) return;
+
+  const entry = journalEl.value.trim();
+  if (!entry) return alert('Please write something before saving.');
+
+  const date = new Date().toLocaleDateString();
+  const weather = descEl.textContent;
+  const journalEntry = `${date} - ${weather}\n${entry}\n\n`;
+
+  const existing = localStorage.getItem('weatherJournal') || '';
+  localStorage.setItem('weatherJournal', journalEntry + existing);
+
+  alert('Journal entry saved!');
+  journalEl.value = '';
+}
+
+// 🔼 Scroll Up
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// 🔽 Scroll Down
+function scrollToBottom() {
+  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+}
+
 // 🧠 Load Saved City & Setup
 window.addEventListener('DOMContentLoaded', () => {
   setupThemeToggle();
 
-  const savedCity = localStorage.getItem('selectedCity');
-  const citySelect = document.getElementById('city-select');
-  if (savedCity && citySelect) {
-    citySelect.value = savedCity;
-    fetchWeather(savedCity);
-  }
-
-  const sound = document.getElementById('weather-sound');
-  if (sound) {
-    sound.volume = 0.5;
-    sound.play().catch(err => console.warn('Autoplay blocked:', err));
+  const urlParams = new URLSearchParams(window.location.search);
+  const cityFromURL = urlParams.get('city');
+  if (cityFromURL) {
+    fetchWeather(cityFromURL);
+    const citySelect = document.getElementById('city-select');
+    if (citySelect) citySelect.value = cityFromURL;
   }
 
   const btn = document.getElementById('get-weather-btn');
   if (btn) {
     btn.addEventListener('click', redirectToWeather);
   }
-});
 
-// 🌦️ Fetch Weather for Select
-
-// 🌦️ Fetch Weather for Select Dropdown (weather.html)
-function fetchWeather(city) {
-  localStorage.setItem('selectedCity', city);
-
-  const loading = document.getElementById('loading');
-  const info = document.getElementById('weather-info');
-  const forecastEl = document.getElementById('forecast');
-  const particles = document.getElementById('particles');
-
-  if (loading) loading.classList.remove('hidden');
-  if (info) info.classList.add('hidden');
-  if (forecastEl) forecastEl.classList.add('hidden');
-  if (particles) particles.innerHTML = '';
-
-  fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`)
-    .then(res => res.json())
-    .then(data => {
-      const emoji = getWeatherEmoji(data.weather[0].main);
-      document.getElementById('weather-description').textContent = `${data.weather[0].description} ${emoji}`;
-
-      const tempEl = document.getElementById('temperature');
-      tempEl.textContent = `${Math.round(data.main.temp)}°C`;
-      tempEl.classList.add('bounce');
-      setTimeout(() => tempEl.classList.remove('bounce'), 600);
-
-      const iconCode = data.weather[0].icon;
-      document.getElementById('weather-icon').src = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
-
-      info.classList.remove('hidden');
-      loading.classList.add('hidden');
-
-      if (data.weather[0].main.toLowerCase().includes('rain')) createParticles('rain');
-      if (data.weather[0].main.toLowerCase().includes('snow')) createParticles('snow');
-
-      fetchForecast(city);
-    })
-    .catch(err => {
-      console.error('Error fetching weather:', err);
-      alert('Could not load weather data.');
-      loading.classList.add('hidden');
+  const citySelect = document.getElementById('city-select');
+  if (citySelect) {
+    citySelect.addEventListener('change', () => {
+      const selectedCity = citySelect.value;
+      fetchWeather(selectedCity);
     });
-}
-
-
+  }
+});
 

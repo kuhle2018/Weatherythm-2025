@@ -50,21 +50,24 @@
     }
     
 
-
   </style>
 </head>
 
 <body class="text-white">
     <div id="background-overlay"></div>
 
-
+    <!-- 🔼 Scroll Up Button -->
+<button onclick="scrollToTop()" class="fixed bottom-24 right-6 bg-pink-500 hover:bg-pink-400 text-white p-3 rounded-full shadow-lg z-50">
+  ⬆️
+</button>
+<!-- 🔽 Scroll down button -->
+<button onclick="scrollToBottom()" class="fixed top-24 right-6 bg-pink-500 hover:bg-pink-400 text-white p-3 rounded-full shadow-lg z-50">
+    ⬇️
+</button>
 
  <audio id="weather-sound" autoplay loop>
   <source src="https://cdn.pixabay.com/download/audio/2023/12/24/audio_8feb17e319.mp3?filename=weather-melody-182846.mp3" type="audio/mpeg">
-
 </audio>
-
-
 
   <!-- 🌦️ Weather Card -->
   <div class="bg-black bg-opacity-50 p-6 rounded-3xl shadow-2xl max-w-xl w-full text-center fade-in relative z-10 mx-auto mt-10">
@@ -160,4 +163,3 @@
 
 </body>
 </html>
-
