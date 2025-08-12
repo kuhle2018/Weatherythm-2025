@@ -62,59 +62,39 @@ function playWeatherSound(weather) {
   currentAudio.play().catch(err => console.warn('Autoplay blocked:', err));
 }
 
-const cityBackgrounds = {
-  "Cape Town": [
-    "https://images.unsplash.com/photo-1600585154340-be6161a56a0c",
-    "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
-    "https://images.unsplash.com/photo-1575311373934-1b4d7b2f3f3c"
-  ],
-  "Johannesburg": [
-    "https://images.unsplash.com/photo-1580656016211-7f9f3b6c3c3b",
-    "https://images.unsplash.com/photo-1575311373934-1b4d7b2f3f3c"
-  ],
-  "Durban": [
-    "https://images.unsplash.com/photo-1600585154340-be6161a56a0c"
-  ],
-  "Pretoria": [
-    "https://images.unsplash.com/photo-1600585154340-be6161a56a0c"
-  ],
-  "Port Elizabeth": [
-    "https://images.unsplash.com/photo-1600585154340-be6161a56a0c"
-  ],
-  "Soweto": [
-    "https://images.unsplash.com/photo-1600585154340-be6161a56a0c"
-  ],
-  "East London": [
-    "https://images.unsplash.com/photo-1600585154340-be6161a56a0c"
-  ]
-};
+const backgroundImages = [
+  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQRq4QgSMv-bQBAkLcI3uV8Pca9k6jLFsQF5g&s",
+  "https://media.istockphoto.com/id/1190646515/photo/cape-town-city-skyline-twilight.jpg?s=612x612&w=0&k=20&c=SgLfitVG16OlDwdqHNELTiw6wcGcWqfeIbdAJUIiZAI=",
+  "https://d3hne3c382ip58.cloudfront.net/files/uploads/bookmundi/resized/cmsfeatured/south-africa-in-october-1650615518-785X440.jpg",
+  "https://images.globalhighlights.com/allpicture/2023/03/735e5acf3c754751ba2dfbaf_cut_600x550_241_1748620726.jpg",
+  "https://www.capetourism.com/wp-content/uploads/2023/02/Weather-Cape-Town-1000x570.jpg",
+  "https://southafrica-info.com/wp-content/uploads/2017/10/summer_magalieberg.jpg",
+  "https://media.istockphoto.com/id/697945296/photo/johannesburg-evening-cityscape-of-hillbrow.jpg?s=612x612&w=0&k=20&c=4VHUAEVXHZf8GwQ-ltegjjj2_9pdeewG2FonG2XUBYc="
+];
+
+
 
 let fadeReady = true;
 
-function rotateCityBackground() {
+function rotateRandomBackground() {
   const overlay = document.getElementById('background-overlay');
-  const citySelect = document.getElementById('city-select');
-  const selectedCity = citySelect?.value || 'Cape Town';
-  const images = cityBackgrounds[selectedCity] || cityBackgrounds['Cape Town'];
-
-  if (!overlay || !fadeReady || images.length === 0) return;
-
-  const randomIndex = Math.floor(Math.random() * images.length);
-  const newImage = images[randomIndex];
+  if (!overlay || !fadeReady) return;
 
   fadeReady = false;
-  overlay.style.transition = 'opacity 1s ease-in-out';
   overlay.style.opacity = 0;
 
   setTimeout(() => {
+    const randomIndex = Math.floor(Math.random() * backgroundImages.length);
+    const newImage = backgroundImages[randomIndex];
     overlay.style.backgroundImage = `url('${newImage}')`;
     overlay.style.opacity = 1;
     fadeReady = true;
-  }, 1000); // Match transition duration
+  }, 1000);
 }
 
-setInterval(rotateCityBackground, 3000);
-document.addEventListener('DOMContentLoaded', rotateCityBackground);
+setInterval(rotateRandomBackground, 3000);
+document.addEventListener('DOMContentLoaded', rotateRandomBackground);
+
 
 
 
@@ -124,7 +104,7 @@ document.addEventListener('DOMContentLoaded', rotateCityBackground);
 document.addEventListener('click', () => {
   const sound = document.getElementById('weather-sound');
   if (sound) {
-    sound.volume = 0.8;
+    sound.volume = 0.9;
     sound.play().catch(err => console.warn('Autoplay blocked:', err));
   }
 }); 
