@@ -1,6 +1,82 @@
 const apiKey = '1e9cd8209abab1efa4cbc8c260b94509';
 let currentAudio = null;
 
+// 🌍 Redirect from index.html to weather.html
+function redirectToWeather() {
+  const cityInput = document.getElementById('city-input');
+  if (!cityInput) return;
+
+  const city = cityInput.value.trim();
+  if (city !== "") {
+    window.location.href = `weather.html?city=${encodeURIComponent(city)}`;
+  }
+}
+
+// 🌗 Theme Toggle Setup (index.html only)
+function setupThemeToggle() {
+  const toggle = document.getElementById("theme-toggle");
+  const dot = document.querySelector(".dot");
+
+  if (!toggle || !dot) return;
+
+  const isDark = localStorage.getItem("theme") === "dark";
+  if (isDark) {
+    toggle.checked = true;
+    document.body.classList.add("bg-black", "text-white");
+    document.body.classList.remove("bg-gradient-to-r", "from-pink-100", "to-blue-100");
+    dot.classList.add("translate-x-8");
+  }
+
+  toggle.addEventListener("change", () => {
+    const isDark = toggle.checked;
+
+    document.body.classList.toggle("bg-black");
+    document.body.classList.toggle("text-white");
+    document.body.classList.toggle("bg-gradient-to-r");
+    document.body.classList.toggle("from-pink-100");
+    document.body.classList.toggle("to-blue-100");
+
+    dot.classList.toggle("translate-x-8");
+
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+  });
+}
+
+// 🔊 Play Weather Sound
+function playWeatherSound(weather) {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+  }
+
+  let soundSrc = '';
+  if (weather.includes('rain')) soundSrc = 'sounds/rain.mp3';
+  else if (weather.includes('clear')) soundSrc = 'sounds/sunny.mp3';
+  else if (weather.includes('snow')) soundSrc = 'sounds/snow.mp3';
+
+  if (!soundSrc) return;
+
+  currentAudio = new Audio(soundSrc);
+  currentAudio.loop = true;
+  currentAudio.volume = 0.5;
+  currentAudio.play().catch(err => console.warn('Autoplay blocked:', err));
+}
+
+// 🖼️ Update Background Based on Weather
+function updateBackground(weather) {
+  const body = document.body;
+  if (!body) return;
+
+  let image = 'images/default.jpg';
+  if (weather.includes('rain')) image = 'images/rainy.jpg';
+  else if (weather.includes('clear')) image = 'images/sunny.jpg';
+  else if (weather.includes('snow')) image = 'images/snowy.jpg';
+
+  body.style.backgroundImage = `url('${image}')`;
+  body.classList.add('fade-bg');
+  setTimeout(() => body.classList.remove('fade-bg'), 1000);
+}
+
 // 🌦️ Fetch Weather from Input (index.html)
 function getWeather() {
   const cityInput = document.getElementById('city-input');
@@ -33,41 +109,6 @@ function getWeather() {
     });
 }
 
-// 🖼️ Update Background Based on Weather
-function updateBackground(weather) {
-  const body = document.body;
-  if (!body) return;
-
-  let image = 'images/default.jpg';
-  if (weather.includes('rain')) image = 'images/rainy.jpg';
-  else if (weather.includes('clear')) image = 'images/sunny.jpg';
-  else if (weather.includes('snow')) image = 'images/snowy.jpg';
-
-  body.style.backgroundImage = `url('${image}')`;
-  body.classList.add('fade-bg');
-  setTimeout(() => body.classList.remove('fade-bg'), 1000);
-}
-
-// 🔊 Play Weather Sound
-function playWeatherSound(weather) {
-  if (currentAudio) {
-    currentAudio.pause();
-    currentAudio.currentTime = 0;
-  }
-
-  let soundSrc = '';
-  if (weather.includes('rain')) soundSrc = 'sounds/rain.mp3';
-  else if (weather.includes('clear')) soundSrc = 'sounds/sunny.mp3';
-  else if (weather.includes('snow')) soundSrc = 'sounds/snow.mp3';
-
-  if (!soundSrc) return;
-
-  currentAudio = new Audio(soundSrc);
-  currentAudio.loop = true;
-  currentAudio.volume = 0.5;
-  currentAudio.play().catch(err => console.warn('Autoplay blocked:', err));
-}
-
 // 📓 Save Journal Entry
 function saveJournal() {
   const journalEl = document.getElementById('journal');
@@ -88,11 +129,49 @@ function saveJournal() {
   journalEl.value = '';
 }
 
-// 🧠 Optional: Auto-load weather if city is saved
+// 📅 Fetch Forecast
+function fetchForecast(city) {
+  fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&appid=${apiKey}`)
+    .then(res => res.json())
+    .then(data => {
+      const forecastEl = document.getElementById('forecast');
+      const days = {};
+
+      data.list.forEach(item => {
+        const date = item.dt_txt.split(' ')[0];
+        if (!days[date]) days[date] = item;
+      });
+
+      forecastEl.innerHTML = '';
+      Object.keys(days).slice(0, 5).forEach(date => {
+        const item = days[date];
+        const icon = item.weather[0].icon;
+        const temp = Math.round(item.main.temp);
+        const description = item.weather[0].description;
+        const weekday = getWeekdayName(date);
+
+        forecastEl.innerHTML += `
+          <div class="bg-white bg-opacity-20 p-2 rounded-lg text-center">
+            <p class="font-semibold">${weekday}</p>
+            <img src="https://openweathermap.org/img/wn/${icon}.png" class="mx-auto w-10 h-10" />
+            <p>${description}</p>
+            <p class="text-lg font-bold">${temp}°C</p>
+          </div>
+        `;
+      });
+
+      forecastEl.classList.remove('hidden');
+    });
+}
+
+// 🧠 Load Saved City & Setup
 window.addEventListener('DOMContentLoaded', () => {
+  setupThemeToggle();
+
   const savedCity = localStorage.getItem('selectedCity');
-  if (savedCity && document.getElementById('city-select')) {
-    document.getElementById('city-select').value = savedCity;
+  const citySelect = document.getElementById('city-select');
+  if (savedCity && citySelect) {
+    citySelect.value = savedCity;
     fetchWeather(savedCity);
   }
 
@@ -100,6 +179,11 @@ window.addEventListener('DOMContentLoaded', () => {
   if (sound) {
     sound.volume = 0.5;
     sound.play().catch(err => console.warn('Autoplay blocked:', err));
+  }
+
+  const btn = document.getElementById('get-weather-btn');
+  if (btn) {
+    btn.addEventListener('click', redirectToWeather);
   }
 });
 
@@ -140,40 +224,6 @@ function fetchWeather(city) {
     });
 }
 
-// 📅 Fetch Forecast
-function fetchForecast(city) {
-  fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&appid=${apiKey}`)
-    .then(res => res.json())
-    .then(data => {
-      const forecastEl = document.getElementById('forecast');
-      const days = {};
-
-      data.list.forEach(item => {
-        const date = item.dt_txt.split(' ')[0];
-        if (!days[date]) days[date] = item;
-      });
-
-      forecastEl.innerHTML = '';
-      Object.keys(days).slice(0, 5).forEach(date => {
-        const item = days[date];
-        const icon = item.weather[0].icon;
-        const temp = Math.round(item.main.temp);
-        const description = item.weather[0].description;
-
-        forecastEl.innerHTML += `
-          <div class="bg-white bg-opacity-20 p-2 rounded-lg text-center">
-            <p class="font-semibold">${date}</p>
-            <img src="https://openweathermap.org/img/wn/${icon}.png" class="mx-auto w-10 h-10" />
-            <p>${description}</p>
-            <p class="text-lg font-bold">${temp}°C</p>
-          </div>
-        `;
-      });
-
-      forecastEl.classList.remove('hidden');
-    });
-}
-
 // 🌈 Emoji Mapper
 function getWeatherEmoji(condition) {
   const map = {
@@ -193,21 +243,17 @@ function getWeatherEmoji(condition) {
     Squall: '🌪️',
     Tornado: '🌪️'
   };
-  return map[condition] || '🌈';
+   return map[condition] || '🌈';
 }
 
-// ❄️ Particle Effects
-function createParticles(type) {
-  const particles = document.getElementById('particles');
-  if (!particles) return;
+// 📅 Convert Date to Weekday Name
+function getWeekdayName(dateStr) {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-US', { weekday: 'long' }); // e.g. "Monday"
+}
 
-  for (let i = 0; i < 50; i++) {
-    const p = document.createElement('div');
-    p.className = 'particle';
-    p.style.left = `${Math.random() * 100}%`;
-    p.style.animationDuration = `${2 + Math.random() * 3}s`;
-    p.style.background = type === 'rain' ? '#00f' : '#fff';
-    particles.appendChild(p);
-  }
+// 📅 Fetch Forecast
+function fetchForecast(city) {
+  // your forecast logic here...
 }
 
