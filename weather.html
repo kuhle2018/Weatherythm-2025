@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>South African Weather</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css">
   <style>
     body {
       transition: background-image 1s ease-in-out, background-color 0.5s ease;
@@ -49,13 +50,14 @@
     }
   </style>
 </head>
+
 <body class="bg-black text-white">
 
-  <!-- 🔊 Sound -->
-  <audio id="weather-sound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_9f3b5b3e3f.mp3?filename=soft-background-ambient-110397.mp3" loop></audio>
+  <!-- 🔊 Soft Calm Audio -->
+  <audio id="weather-sound" src="https://cdn.pixabay.com/download/audio/2023/03/01/audio_3f3e1f3f3f.mp3?filename=silent-evening-calm-piano-139812.mp3" loop></audio>
 
   <!-- 🌦️ Weather Card -->
-  <div class="bg-black bg-opacity-50 p-6 rounded-3xl shadow-2xl max-w-xl w-full text-center fade-in relative z-10">
+  <div class="bg-black bg-opacity-50 p-6 rounded-3xl shadow-2xl max-w-xl w-full text-center fade-in relative z-10 mx-auto mt-10">
     <h1 class="text-3xl font-bold mb-4">South African Weather</h1>
 
     <!-- 🌍 City Selector -->
@@ -83,13 +85,10 @@
 
     <!-- 📅 Forecast -->
     <div id="forecast" class="grid grid-cols-2 gap-4 text-sm hidden"></div>
+  </div>
 
-    <!-- 🌗 Theme Toggle -->
-    <button id="theme-toggle" class="bg-yellow-500 hover:bg-yellow-400 text-black font-semibold py-2 px-4 rounded-full mb-4">
-      Toggle Theme 🌗
-    </button>
-
-    <!-- ⬅️ Previous Page -->
+  <!-- ⬅️ Previous Page Button -->
+  <div class="absolute bottom-6 left-6 z-10">
     <a href="index.html">
       <button class="bg-blue-500 hover:bg-blue-400 text-white font-semibold py-2 px-6 rounded-full shadow-md transition-all duration-300">
         ⬅️ Previous Page
@@ -100,156 +99,8 @@
   <!-- 🌧️ Particle Container -->
   <div id="particles" class="absolute top-0 left-0 w-full h-full pointer-events-none z-0"></div>
 
-  <!-- 📜 Scripts -->
-  <script>
-    const cityImages = [
-      "https://images.unsplash.com/photo-1506744038136-46273834b3fb", // Cape Town
-      "https://images.unsplash.com/photo-1527766833261-b09c3163a791", // Johannesburg
-      "https://images.unsplash.com/photo-1503264116251-35a269479413", // Durban
-      "https://images.unsplash.com/photo-1608889175091-7e7d7e3c8c3d", // Pretoria
-      "https://images.unsplash.com/photo-1501973801540-537f08ccae7b", // Port Elizabeth
-      "https://images.unsplash.com/photo-1584467735871-6c1e3f3f3f3f", // Soweto
-      "https://images.unsplash.com/photo-1584467735871-6c1e3f3f3f3f"  // East London
-    ];
-
-    let currentIndex = 0;
-    function rotateBackground() {
-      document.body.classList.add("fade-bg");
-      document.body.style.backgroundImage = `url('${cityImages[currentIndex]}')`;
-      currentIndex = (currentIndex + 1) % cityImages.length;
-      setTimeout(() => document.body.classList.remove("fade-bg"), 1000);
-    }
-    setInterval(rotateBackground, 3000);
-    rotateBackground();
-
-    // 🔊 Play Sound
-    window.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("weather-sound").volume = 0.5;
-      document.getElementById("weather-sound").play().catch(err => console.warn("Autoplay blocked:", err));
-    });
-
-    const apiKey = "1e9cd8209abab1efa4cbc8c260b94509";
-    const citySelect = document.getElementById("city-select");
-    const loading = document.getElementById("loading");
-    const info = document.getElementById("weather-info");
-    const forecastEl = document.getElementById("forecast");
-    const particles = document.getElementById("particles");
-
-    function fetchWeather(city) {
-      localStorage.setItem("selectedCity", city);
-      loading.classList.remove("hidden");
-      info.classList.add("hidden");
-      forecastEl.classList.add("hidden");
-      particles.innerHTML = "";
-
-      fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`)
-        .then(res => res.json())
-        .then(data => {
-          const emoji = getWeatherEmoji(data.weather[0].main);
-          document.getElementById("weather-description").textContent = `${data.weather[0].description} ${emoji}`;
-          const tempEl = document.getElementById("temperature");
-          tempEl.textContent = `${Math.round(data.main.temp)}°C`;
-          tempEl.classList.add("bounce");
-          setTimeout(() => tempEl.classList.remove("bounce"), 600);
-
-          const iconCode = data.weather[0].icon;
-          document.getElementById("weather-icon").src = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
-
-          info.classList.remove("hidden");
-          loading.classList.add("hidden");
-
-          if (data.weather[0].main.toLowerCase().includes("rain")) createParticles("rain");
-          if (data.weather[0].main.toLowerCase().includes("snow")) createParticles("snow");
-
-          fetchForecast(city);
-        });
-    }
-
-    function fetchForecast(city) {
-      fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&appid=${apiKey}`)
-        .then(res => res.json())
-        .then(data => {
-          const days = {};
-          data.list.forEach(item => {
-            const date = item.dt_txt.split(" ")[0];
-            if (!days[date]) {
-              days[date] = item;
-            }
-          });
-
-          forecastEl.innerHTML = "";
-          Object.keys(days).slice(0, 5).forEach(date => {
-            const item = days[date];
-            const icon = item.weather[0].icon;
-            const temp = Math.round(item.main.temp);
-            const description = item.weather[0].description;
-            forecastEl.innerHTML += `
-              <div class="bg-white bg-opacity-20 p-2 rounded-lg text-center">
-                <p class="font-semibold">${date}</p>
-                <img src="https://openweathermap.org/img/wn/${icon}.png" class="mx-auto w-10 h-10" />
-                <p>${description}</p>
-                <p class="text-lg font-bold">${temp}°C</p>
-              </div>
-            `;
-          });
-
-          forecastEl.classList.remove("hidden");
-        });
-    }
-
-    // 🌈 Emoji Mapper
-    function getWeatherEmoji(condition) {
-      const map = {
-        Clear: "☀️",
-        Clouds: "☁️",
-        Rain: "🌧️",
-        Snow: "❄️",
-        Thunderstorm: "⛈️",
-        Drizzle: "🌦️",
-        Mist: "🌫️",
-        Smoke: "💨",
-        Haze: "🌁",
-        Dust: "🌬️",
-        Fog: "🌫️",
-        Sand: "🏜️",
-        Ash: "🌋",
-        Squall: "🌪️",
-        Tornado: "🌪️"
-      };
-      return map[condition] || "🌈";
-    }
-
-    // ❄️ Particle Effects
-    function createParticles(type) {
-      for (let i = 0; i < 50; i++) {
-        const p = document.createElement("div");
-        p.className = "particle";
-        p.style.left = `${Math.random() * 100}%`;
-        p.style.animationDuration = `${2 + Math.random() * 3}s`;
-        p.style.background = type === "rain" ? "#00f" : "#fff";
-        particles.appendChild(p);
-      }
-    }
-
-    // 🌗 Theme Toggle
-    document.getElementById("theme-toggle").addEventListener("click", () => {
-      document.body.classList.toggle("bg-black");
-      document.body.classList.toggle("bg-white");
-      document.body.classList.toggle("text-white");
-      document.body.classList.toggle("text-black");
-    });
-
-    // 🏙️ City Selector
-    citySelect.addEventListener("change", () => {
-      fetchWeather(citySelect.value);
-    });
-
-    // 🧠 Load Saved City
-    const savedCity = localStorage.getItem("selectedCity") || "Cape Town";
-    citySelect.value = savedCity;
-    fetchWeather(savedCity);
-  </script>
+  <!-- 📜 External Script -->
+  <script src="script.js"></script>
 </body>
 </html>
-
 
