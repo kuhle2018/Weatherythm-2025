@@ -2,17 +2,25 @@
 body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #ff9a9e, #fad0c4, #fbc2eb, #a18cd1, #fbc2eb, #fad0c4, #ff9a9e);
-  background-size: 400% 400%;
-  animation: rainbowFlow 15s ease infinite;
-  color: var(--text-color);
-  background-color: var(--bg-color);
-  background-position: center;
+  background-image: url('https://media.istockphoto.com/id/915614956/photo/spring-daisy-flowers.jpg?s=612x612&w=0&k=20&c=0Q_UPeUOTCRdvwUzI3EFx24EoZgYR5rVFBR_iOF9uPc=');
   background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: var(--text-color);
+  background-color: var(--bg-color); /* fallback color if image fails */
   transition: opacity 1s ease-in-out;
   overflow-x: hidden;
   overflow-y: auto;
 }
+
+
+.overlay {
+  background-color: rgba(226, 160, 202, 0.4); /* soft dark overlay */
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+
 
 @keyframes rainbowFlow {
   0% { background-position: 0% 50%; }
