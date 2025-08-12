@@ -48,13 +48,20 @@
       0% { transform: translateY(-10px); opacity: 1; }
       100% { transform: translateY(100vh); opacity: 0; }
     }
+    
+
+
   </style>
 </head>
 
 <body class="bg-black text-white">
 
-  <!-- 🔊 Soft Calm Audio -->
-  <audio id="weather-sound" src="https://cdn.pixabay.com/download/audio/2023/03/01/audio_3f3e1f3f3f.mp3?filename=silent-evening-calm-piano-139812.mp3" loop></audio>
+ <audio id="weather-sound" autoplay loop>
+  <source src="https://cdn.pixabay.com/download/audio/2023/12/24/audio_8feb17e319.mp3?filename=weather-melody-182846.mp3" type="audio/mpeg">
+
+</audio>
+
+
 
   <!-- 🌦️ Weather Card -->
   <div class="bg-black bg-opacity-50 p-6 rounded-3xl shadow-2xl max-w-xl w-full text-center fade-in relative z-10 mx-auto mt-10">
